@@ -1,3 +1,9 @@
+python3-defaults (3.5.3-1pexip1) pexip; urgency=medium
+
+  * Prepare Pexip packaging
+
+ -- John-Mark Bell <jmb@pexip.com>  Fri, 03 Aug 2018 23:16:02 +0000
+
 python3-defaults (3.5.3-1) unstable; urgency=medium
 
   * Bump version to 3.5.3.
