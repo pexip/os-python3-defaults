@@ -22,10 +22,13 @@ distribution := $(shell dpkg-vendor --query Vendor)
 distrelease  := $(shell lsb_release -cs)
 
 # requiered python3.x version
-UPSTRVER   := 3.5.3-1~
+UPSTRVER   := 3.7.3-1~
+
+# required versions of python3-lib2to3 and python3-distutils
+STDLIBVER   := 3.7.2-1~
 
 ifeq (,$(filter $(distrelease),lenny etch squeeze wheezy lucid maverick natty oneiric precise quantal raring saucy trusty))
-  bd_i586 = dpkg-dev (>= 1.17.11), python3.5 (>= 3.5.3-1~),
+  bd_i586 = dpkg-dev (>= 1.17.11), python3.7:any (>= 3.7.3-1~),
 else
   bd_i586 = dpkg-dev (>= 1.16.1~),
 endif
@@ -52,18 +55,21 @@ stamp-build:
 	touch stamp-build
 
 stamp-doc-policy:
-	debiandoc2text debian/python-policy.sgml
+	xsltproc --nonet --novalid debian/html.xsl debian/python-policy.dbk \
+	    | w3m -o display_charset=UTF-8 -cols 70 -dump -no-graph -T text/html > python-policy.txt
 	mv -f python-policy.txt debian/
-	debiandoc2html debian/python-policy.sgml
 	rm -rf debian/python-policy.html
+	mkdir python-policy.html
+	( cd python-policy.html; xsltproc --nonet --novalid ../debian/chunk.xsl ../debian/python-policy.dbk )
 	mv -f python-policy.html debian/
 	touch stamp-doc-policy
 
-stamp-doc: #stamp-doc-policy
+stamp-doc: stamp-doc-policy
 	touch stamp-doc
 
 control-file:
 	sed -e "s/@UPSTRVER@/$(UPSTRVER)/g" \
+	    -e "s/@STDLIBVER@/$(STDLIBVER)/g" \
 	    -e "s/@IPKGVER@/$(IPKGVER)/g" \
 	    -e "s/@NVER@/$(NVER)/g" \
 	    -e "s/@VER@/$(VER)/g" \
@@ -184,25 +190,32 @@ ifeq ($(with_doc),yes)
 endif
 
 	: # provide the idle and idle.1 defaults
-	mkdir -p debian/idle3/usr/bin
-	install -m 755 debian/idle.py debian/idle3/usr/bin/idle3
+	mkdir -p debian/idle/usr/bin
+	install -m 755 debian/idle.py debian/idle/usr/bin/idle
 
-	mkdir -p debian/idle3/usr/share/man/man1
-	install -m 644 debian/idle.1 debian/idle3/usr/share/man/man1/idle3.1
+	mkdir -p debian/idle/usr/share/man/man1
+	install -m 644 debian/idle.1 debian/idle/usr/share/man/man1/idle.1
 
-	mkdir -p debian/idle3/usr/share/pixmaps
-	ln -sf python3.xpm debian/idle3/usr/share/pixmaps/idle3.xpm
+	mkdir -p debian/idle/usr/share/pixmaps
+	ln -sf python3.xpm debian/idle/usr/share/pixmaps/idle.xpm
 
-	mkdir -p debian/idle3/usr/share/applications
-	cp -p debian/idle3.desktop debian/idle3/usr/share/applications/
+	mkdir -p debian/idle/usr/share/applications
+	cp -p debian/idle.desktop debian/idle/usr/share/applications/
+
+	: # provide the 2to3-3 a and 2to3-3.1 defaults
+	mkdir -p debian/2to3/usr/bin
+	install -m 755 debian/2to3.py debian/2to3/usr/bin/2to3
+
+	mkdir -p debian/2to3/usr/share/man/man1
+	install -m 644 debian/2to3.1 debian/2to3/usr/share/man/man1/2to3.1
 
 #	dh_installdebconf -i $(NOPKGS)
 	dh_lintian -i
 	dh_installdocs -i $(NOPKGS) --all debian/README.Debian
 	dh_installchangelogs -i $(NOPKGS)
 
-	for p in examples idle3; do \
-	  [ $$p = idle3 ] || p=python3-$$p; \
+	for p in examples idle idle3; do \
+	  case $$p in idle*) : ;; *) p=python3-$$p; esac; \
 	  rm -rf debian/$$p/usr/share/doc/$$p; \
 	  ln -sf python3 debian/$$p/usr/share/doc/$$p; \
 	done
@@ -215,7 +228,7 @@ endif
 	dh_builddeb -i $(NOPKGS)
 
 # Build architecture-dependent files here.
-binary-arch: build install
+binary-arch: build install stamp-doc
 	dh_testdir -a
 	dh_testroot -a
 	dh_installman -a
@@ -262,22 +275,18 @@ binary-arch: build install
 		debian/python3/usr/share/man/man1/pdb3.1.gz
 
 	mkdir -p debian/python3/usr/share/doc/python3
-ifeq (0,1)
-	cp -a debian/python-policy.{html,sgml,txt} \
-		debian/python/usr/share/doc/python3/
-endif
+	cp -a debian/python-policy.{html,dbk,txt} \
+		debian/python3/usr/share/doc/python3/
 
 	mkdir -p debian/python3/usr/share/pixmaps
 	ln -sf python$(VER).xpm debian/python3/usr/share/pixmaps/python3.xpm
 
-ifeq (0,1)
 	: # add symlinks to policy files
-	mkdir -p debian/python/usr/share/doc/python$(VER)
-	for ext in html sgml.gz txt.gz; do \
-	  ln -sf ../python/python-policy.$$ext \
-		debian/python/usr/share/doc/python$(VER)/python-policy.$$ext; \
+	mkdir -p debian/python3/usr/share/doc/python$(VER)
+	for ext in html dbk.gz txt.gz; do \
+	  ln -sf ../python3/python-policy.$$ext \
+		debian/python3/usr/share/doc/python$(VER)/python-policy.$$ext; \
 	done
-endif
 
 ifeq (0,1)
 	mkdir -p debian/python3/usr/share/apps/konsole
@@ -390,7 +399,7 @@ endif
 	dh_installchangelogs -a $(NOPKGS)
 
 	for p in all all-dev all-dbg dbg dev venv; do \
-	  [ $$p = idle3 ] || p=python3-$$p; \
+	  case $$p in idle*) : ;; *) p=python3-$$p; esac; \
 	  rm -rf debian/$$p/usr/share/doc/$$p; \
 	  ln -sf python3 debian/$$p/usr/share/doc/$$p; \
 	done

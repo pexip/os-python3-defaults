@@ -54,7 +54,7 @@ def parse_versions(vstring):
         if field in ('current', 'current_ext'):
             continue
         vinfo.setdefault('versions', set())
-        ve = re.compile('(>=|<=|<<|=)? *(\d\.\d)$')
+        ve = re.compile(r'(>=|<=|<<|=)? *(\d\.\d)$')
         m = ve.match(field)
         try:
             if not m:

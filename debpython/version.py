@@ -329,15 +329,15 @@ def parse_pycentral_vrange(value):
     for item in value.split(','):
         item = item.strip()
 
-        match = re.match('>=\s*([\d\.]+)', item)
+        match = re.match(r'>=\s*([\d\.]+)', item)
         if match:
             minv = "%.3s" % match.group(1)
             continue
-        match = re.match('<<\s*([\d\.]+)', item)
+        match = re.match(r'<<\s*([\d\.]+)', item)
         if match:
             maxv = "%.3s" % match.group(1)
             continue
-        match = re.match('^[\d\.]+$', item)
+        match = re.match(r'^[\d\.]+$', item)
         if match:
             hardcoded.add("%.3s" % match.group(0))
 
