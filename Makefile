@@ -29,8 +29,8 @@ install: install-dev install-runtime
 
 manpages: $(MANPAGES)
 
-pdebuild:
-	pdebuild --debbuildopts -I
+sbuild:
+	sbuild --debbuildopts -I
 
 # TESTS
 tests:

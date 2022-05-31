@@ -22,13 +22,13 @@ distribution := $(shell dpkg-vendor --query Vendor)
 distrelease  := $(shell lsb_release -cs)
 
 # requiered python3.x version
-UPSTRVER   := 3.7.3-1~
+UPSTRVER   := 3.9.2-0~
 
 # required versions of python3-lib2to3 and python3-distutils
-STDLIBVER   := 3.7.2-1~
+STDLIBVER   := 3.9.2-0~
 
 ifeq (,$(filter $(distrelease),lenny etch squeeze wheezy lucid maverick natty oneiric precise quantal raring saucy trusty))
-  bd_i586 = dpkg-dev (>= 1.17.11), python3.7:any (>= 3.7.3-1~),
+  bd_i586 = dpkg-dev (>= 1.17.11), python3.9:any (>= 3.9.2-0~),
 else
   bd_i586 = dpkg-dev (>= 1.16.1~),
 endif
@@ -55,13 +55,16 @@ stamp-build:
 	touch stamp-build
 
 stamp-doc-policy:
-	xsltproc --nonet --novalid debian/html.xsl debian/python-policy.dbk \
-	    | w3m -o display_charset=UTF-8 -cols 70 -dump -no-graph -T text/html > python-policy.txt
-	mv -f python-policy.txt debian/
-	rm -rf debian/python-policy.html
-	mkdir python-policy.html
-	( cd python-policy.html; xsltproc --nonet --novalid ../debian/chunk.xsl ../debian/python-policy.dbk )
-	mv -f python-policy.html debian/
+	: # compact text version
+	$(MAKE) -C policy singlehtml SPHINXOPTS='-D html_theme_options.nosidebar=true'
+	( \
+	    echo 'The HTML version of the Debian Python Policy can be found in the python3-dev package'; \
+	    html2text -utf8 -style pretty policy/_build/singlehtml/index.html; \
+	) > policy/_build/python-policy.txt
+	rm -rf policy/_build/singlehtml
+
+	: # dh_sphinxdoc cannot handle singlehtml, so build both and then discard html
+	$(MAKE) -C policy html singlehtml
 	touch stamp-doc-policy
 
 stamp-doc: stamp-doc-policy
@@ -109,8 +112,7 @@ clean: control-file
 	rm -f stamp-*
 	rm -f patch-stamp*
 
-	rm -f debian/python-policy.txt
-	rm -rf debian/python-policy.html
+	rm -rf policy/_build
 	rm -f faq/*.h2 faq/*.html
 
 	set -e;\
@@ -236,12 +238,9 @@ binary-arch: build install stamp-doc
 	: # provide the python and python.1 defaults
 	mkdir -p debian/python3-minimal/usr/bin
 	ln -sf python$(VER) debian/python3-minimal/usr/bin/python3
-	ln -sf python$(VER)m debian/python3-minimal/usr/bin/python3m
 	mkdir -p debian/python3-minimal/usr/share/man/man1
 	ln -sf python$(VER).1.gz \
 		debian/python3-minimal/usr/share/man/man1/python3.1.gz
-	ln -sf python$(VER)m.1.gz \
-		debian/python3-minimal/usr/share/man/man1/python3m.1.gz
 
 	: # 
 	mkdir -p debian/python3-minimal/usr/share/python3
@@ -275,18 +274,30 @@ binary-arch: build install stamp-doc
 		debian/python3/usr/share/man/man1/pdb3.1.gz
 
 	mkdir -p debian/python3/usr/share/doc/python3
-	cp -a debian/python-policy.{html,dbk,txt} \
+	cp -p policy/_build/python-policy.txt \
 		debian/python3/usr/share/doc/python3/
+
+	mkdir -p debian/python3-dev/usr/share/doc/python3
+	: # dh_sphinxdoc cannot handle singlehtml, so build both and then discard html
+	cp -a policy/_build/html/* \
+		debian/python3-dev/usr/share/doc/python3/
+	dh_sphinxdoc -v -p python3-dev
+	rm -rf debian/python3-dev/usr/share/doc/python3/_sources
+	rm -f debian/python3-dev/usr/share/doc/python3/*.html
+	rm -f debian/python3-dev/usr/share/doc/python3/objects.inv
+
+	cp -p policy/_build/singlehtml/index.html \
+		debian/python3-dev/usr/share/doc/python3/python-policy.html
+	ln -sf python-policy.html \
+		debian/python3-dev/usr/share/doc/python3/index.html
 
 	mkdir -p debian/python3/usr/share/pixmaps
 	ln -sf python$(VER).xpm debian/python3/usr/share/pixmaps/python3.xpm
 
-	: # add symlinks to policy files
+	: # add symlinks to policy text file
 	mkdir -p debian/python3/usr/share/doc/python$(VER)
-	for ext in html dbk.gz txt.gz; do \
-	  ln -sf ../python3/python-policy.$$ext \
-		debian/python3/usr/share/doc/python$(VER)/python-policy.$$ext; \
-	done
+	ln -sf ../python3/python-policy.txt.gz \
+		debian/python3/usr/share/doc/python$(VER)/python-policy.txt.gz
 
 ifeq (0,1)
 	mkdir -p debian/python3/usr/share/apps/konsole
@@ -295,41 +306,41 @@ endif
 
 	: # provide the python3-config default
 	mkdir -p debian/python3-dev/usr/bin
-	ln -sf python$(VER)m-config debian/python3-dev/usr/bin/python3m-config
-	mkdir -p debian/python3-dev/usr/share/man/man1
-	ln -sf python$(VER)m-config.1.gz \
-		debian/python3-dev/usr/share/man/man1/python3m-config.1.gz
 	ln -sf python$(VER)-config debian/python3-dev/usr/bin/python3-config
+	mkdir -p debian/python3-dev/usr/share/man/man1
 	ln -sf python$(VER)-config.1.gz \
 		debian/python3-dev/usr/share/man/man1/python3-config.1.gz
 
 	: # provide pkgconfig defaults
-	mkdir -p debian/python3-dev/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig
-	ln -sf python-$(VER).pc debian/python3-dev/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/python3.pc
-	mkdir -p debian/python3-dbg/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig
-	ln -sf python-$(VER)-dbg.pc debian/python3-dbg/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/python3-dbg.pc
+	mkdir -p debian/libpython3-dev/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig
+	ln -sf python-$(VER).pc \
+		debian/libpython3-dev/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/python3.pc
 
-ifeq (0,1)
-	: # provide pyconfig.h in the non-multiarch location.
-	mkdir -p debian/python3-dev/usr/include/python$(VER)m
-	ln -sf ../$(DEB_HOST_MULTIARCH)/python$(VER)m/pyconfig.h \
-		debian/python3-dev/usr/include/python$(VER)m/pyconfig.h
-	mkdir -p debian/python3-dbg/usr/include/python$(VER)dm
-	ln -sf ../$(DEB_HOST_MULTIARCH)/python$(VER)dm/pyconfig.h \
-		debian/python3-dbg/usr/include/python$(VER)dm/pyconfig.h
-endif
+	mkdir -p debian/libpython3-dbg/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig
+	ln -sf python-$(VER)-dbg.pc \
+		debian/libpython3-dbg/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/python3-dbg.pc
+	ln -sf python-$(VER)d.pc \
+		debian/libpython3-dbg/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/python3d.pc
+
+	ln -sf python-$(VER)-embed.pc \
+		debian/libpython3-dev/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/python3-embed.pc
+
+	ln -sf python-$(VER)d-embed.pc \
+		debian/libpython3-dbg/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/python3d-embed.pc
+	ln -sf python-$(VER)d-embed.pc \
+		debian/libpython3-dbg/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/python3-dbg-embed.pc
 
 	: # provide the python-dbg and python-dbg.1 defaults
 	mkdir -p debian/python3-dbg/usr/bin
-	ln -sf python$(VER)dm debian/python3-dbg/usr/bin/python3dm
-	ln -sf python$(VER)dm-config debian/python3-dbg/usr/bin/python3dm-config
+	ln -sf python$(VER)d debian/python3-dbg/usr/bin/python3d
+	ln -sf python$(VER)d-config debian/python3-dbg/usr/bin/python3d-config
 	ln -sf python$(VER)-dbg debian/python3-dbg/usr/bin/python3-dbg
 	ln -sf python$(VER)-dbg-config debian/python3-dbg/usr/bin/python3-dbg-config
 	mkdir -p debian/python3-dbg/usr/share/man/man1
-	ln -sf python$(VER)dm.1.gz \
-		debian/python3-dbg/usr/share/man/man1/python3dm.1.gz
-	ln -sf python$(VER)dm-config.1.gz \
-		debian/python3-dbg/usr/share/man/man1/python3dm-config.1.gz
+	ln -sf python$(VER)d.1.gz \
+		debian/python3-dbg/usr/share/man/man1/python3d.1.gz
+	ln -sf python$(VER)d-config.1.gz \
+		debian/python3-dbg/usr/share/man/man1/python3d-config.1.gz
 	ln -sf python$(VER)-dbg.1.gz \
 		debian/python3-dbg/usr/share/man/man1/python3-dbg.1.gz
 	ln -sf python$(VER)-dbg-config.1.gz \
@@ -346,59 +357,44 @@ endif
 
 	: # provide the DEB_HOST_GNU_TYPE/DEB_HOST_MULTIRACH python-config defaults
 	mkdir -p debian/libpython3-dev/usr/bin
-	ln -sf $(DEB_HOST_MULTIARCH)-python$(VER)m-config \
-		debian/libpython3-dev/usr/bin/$(DEB_HOST_MULTIARCH)-python3m-config
 	ln -sf $(DEB_HOST_MULTIARCH)-python$(VER)-config \
 		debian/libpython3-dev/usr/bin/$(DEB_HOST_MULTIARCH)-python3-config
 	mkdir -p debian/libpython3-dev/usr/share/man/man1
-	ln -sf $(DEB_HOST_MULTIARCH)-python$(VER)m-config.1.gz \
-		debian/libpython3-dev/usr/share/man/man1/$(DEB_HOST_MULTIARCH)-python3m-config.1.gz
 	ln -sf $(DEB_HOST_MULTIARCH)-python$(VER)-config.1.gz \
 		debian/libpython3-dev/usr/share/man/man1/$(DEB_HOST_MULTIARCH)-python3-config.1.gz
 ifneq ($(DEB_HOST_MULTIARCH),$(DEB_HOST_GNU_TYPE))
-	ln -sf $(DEB_HOST_GNU_TYPE)-python$(VER)m-config \
-		debian/libpython3-dev/usr/bin/$(DEB_HOST_GNU_TYPE)-python3m-config
 	ln -sf $(DEB_HOST_GNU_TYPE)-python$(VER)-config \
 		debian/libpython3-dev/usr/bin/$(DEB_HOST_GNU_TYPE)-python3-config
-	ln -sf $(DEB_HOST_GNU_TYPE)-python$(VER)m-config.1.gz \
-		debian/libpython3-dev/usr/share/man/man1/$(DEB_HOST_GNU_TYPE)-python3m-config.1.gz
 	ln -sf $(DEB_HOST_GNU_TYPE)-python$(VER)-config.1.gz \
 		debian/libpython3-dev/usr/share/man/man1/$(DEB_HOST_GNU_TYPE)-python3-config.1.gz
 endif
 
 	mkdir -p debian/libpython3-dbg/usr/bin
-	ln -sf $(DEB_HOST_MULTIARCH)-python$(VER)dm-config \
-		debian/libpython3-dbg/usr/bin/$(DEB_HOST_MULTIARCH)-python3dm-config
+	ln -sf $(DEB_HOST_MULTIARCH)-python$(VER)d-config \
+		debian/libpython3-dbg/usr/bin/$(DEB_HOST_MULTIARCH)-python3d-config
 	ln -sf $(DEB_HOST_MULTIARCH)-python$(VER)-dbg-config \
 		debian/libpython3-dbg/usr/bin/$(DEB_HOST_MULTIARCH)-python3-dbg-config
 	mkdir -p debian/libpython3-dbg/usr/share/man/man1
-	ln -sf $(DEB_HOST_MULTIARCH)-python$(VER)dm-config.1.gz \
-		debian/libpython3-dbg/usr/share/man/man1/$(DEB_HOST_MULTIARCH)-python3dm-config.1.gz
+	ln -sf $(DEB_HOST_MULTIARCH)-python$(VER)d-config.1.gz \
+		debian/libpython3-dbg/usr/share/man/man1/$(DEB_HOST_MULTIARCH)-python3d-config.1.gz
 	ln -sf $(DEB_HOST_MULTIARCH)-python$(VER)-dbg-config.1.gz \
 		debian/libpython3-dbg/usr/share/man/man1/$(DEB_HOST_MULTIARCH)-python3-dbg-config.1.gz
 ifneq ($(DEB_HOST_MULTIARCH),$(DEB_HOST_GNU_TYPE))
-	ln -sf $(DEB_HOST_GNU_TYPE)-python$(VER)dm-config \
-		debian/libpython3-dbg/usr/bin/$(DEB_HOST_GNU_TYPE)-python3dm-config
+	ln -sf $(DEB_HOST_GNU_TYPE)-python$(VER)d-config \
+		debian/libpython3-dbg/usr/bin/$(DEB_HOST_GNU_TYPE)-python3d-config
 	ln -sf $(DEB_HOST_GNU_TYPE)-python$(VER)-dbg-config \
 		debian/libpython3-dbg/usr/bin/$(DEB_HOST_GNU_TYPE)-python3-dbg-config
-	ln -sf $(DEB_HOST_GNU_TYPE)-python$(VER)dm-config.1.gz \
-		debian/libpython3-dbg/usr/share/man/man1/$(DEB_HOST_GNU_TYPE)-python3dm-config.1.gz
+	ln -sf $(DEB_HOST_GNU_TYPE)-python$(VER)d-config.1.gz \
+		debian/libpython3-dbg/usr/share/man/man1/$(DEB_HOST_GNU_TYPE)-python3d-config.1.gz
 	ln -sf $(DEB_HOST_GNU_TYPE)-python$(VER)-dbg-config.1.gz \
 		debian/libpython3-dbg/usr/share/man/man1/$(DEB_HOST_GNU_TYPE)-python3-dbg-config.1.gz
 endif
-
-	: # provide the pyvenv and pyvenv.1 defaults
-	mkdir -p debian/python3-venv/usr/bin
-	ln -sf pyvenv-$(VER) debian/python3-venv/usr/bin/pyvenv
-	mkdir -p debian/python3-venv/usr/share/man/man1
-	ln -sf pyvenv-$(VER).1.gz \
-		debian/python3-venv/usr/share/man/man1/pyvenv.1.gz
 
 	dh_lintian -a
 	dh_installdocs -a $(NOPKGS) --all debian/README.Debian
 	dh_installchangelogs -a $(NOPKGS)
 
-	for p in all all-dev all-dbg dbg dev venv; do \
+	for p in all all-dev all-dbg dbg dev venv full; do \
 	  case $$p in idle*) : ;; *) p=python3-$$p; esac; \
 	  rm -rf debian/$$p/usr/share/doc/$$p; \
 	  ln -sf python3 debian/$$p/usr/share/doc/$$p; \
