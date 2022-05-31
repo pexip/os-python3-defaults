@@ -16,7 +16,7 @@ Standards-Version: 4.3.0
 Homepage: https://www.python.org/
 Vcs-Git: https://salsa.debian.org/cpython-team/python3-defaults.git
 Vcs-Browser: https://salsa.debian.org/cpython-team/python3-defaults
-XS-Pexip-Upstream: http://ftp.debian.org/debian/ buster
+XS-Pexip-Upstream: http://deb.debian.org/debian/ bullseye
 
 Package: python3
 Architecture: any
