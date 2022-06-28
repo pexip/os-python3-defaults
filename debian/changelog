@@ -1,3 +1,9 @@
+python3-defaults (3.9.2.3pexip3) pexip-bullseye; urgency=medium
+
+  * Fix Maintainer/Uploaders fields in debian/control.
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Tue, 28 Jun 2022 20:57:20 +0100
+
 python3-defaults (3.9.2.3pexip2) pexip-bullseye; urgency=medium
 
   * Main bullseye build
