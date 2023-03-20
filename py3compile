@@ -63,23 +63,45 @@ def get_exclude_patterns_from_dir(name='/usr/share/python3/bcep/'):
 
     result = []
     for fn in listdir(name):
+        if fn.startswith('.'):
+            continue
         with open(join(name, fn), 'r', encoding='utf-8') as lines:
             for line in lines:
-                type_, vrange, dname, pattern = line.split('|', 3)
+                if line.startswith('#'):
+                    continue
+                line = line.rstrip('\n')
+
+                try:
+                    type_, vrange, dname, pattern = line.split('|', 3)
+                except ValueError:
+                    pattern = '.*'
+                    type_, vrange, dname = line.split('|', 2)
+                if type_ != 'file':
+                    dname = dname.rstrip('/') + '/'  # make sure it ends with slash
                 vrange = parse_vrange(vrange)
+
                 versions = get_requested_versions(vrange, available=True)
                 if not versions:
                     # pattern doesn't match installed Python versions
                     continue
-                pattern = pattern.rstrip('\n')
-                if type_ == 're':
-                    pattern = compile_regexpr(None, None, pattern)
+
+                if type_ == 're' or pattern:
+                    try:
+                        pattern = compile_regexpr(None, None, pattern)
+                    except Exception:
+                        log.warning('skipping invalid pattern in file %s, line: %s', fn, line)
+                        continue
+
                 result.append((type_, versions, dname, pattern))
     return result
 
 
 def get_exclude_patterns(directory='/', patterns=None, versions=None):
     """Return patterns for files that shouldn't be compiled in given dir."""
+
+    # make sure directory name ends with a slash
+    directory = directory.rstrip('/') + '/'
+
     if versions is not None:
         # make sure it's a set (debsorted returns a list)
         versions = set(versions)
@@ -103,24 +125,31 @@ def get_exclude_patterns(directory='/', patterns=None, versions=None):
 
 def filter_files(files, e_patterns, compile_versions):
     """Generate (file, versions_to_compile) pairs."""
-    for fn in files:
+    for fpath in files:
         valid_versions = set(compile_versions)  # all by default
 
         for type_, vers, dname, pattern in e_patterns:
-            if type_ == 'dir' and fn.startswith(dname):
+            if not fpath.startswith(dname):
+                continue
+            rfpath = fpath[len(dname):]  # relative to dname
+
+            if type_ == 'dir':  # fpath.startswith(dname) - see above
                 valid_versions = valid_versions - vers
-            elif type_ == 're' and pattern.match(fn):
+            elif type_ == 'file' and fpath == dname:
+                valid_versions = valid_versions - vers
+            elif type_ == 're' and (pattern.match(fpath) or pattern.match(rfpath)):
+                # NOTE: directory is checked at the beginning of this loop
                 valid_versions = valid_versions - vers
 
             # move to the next file if all versions were removed
             if not valid_versions:
                 break
         if valid_versions:
-            public_dir = PUBLIC_DIR_RE.match(fn)
+            public_dir = PUBLIC_DIR_RE.match(fpath)
             if public_dir and len(public_dir.group(1)) != 1:
-                yield fn, set([getver(public_dir.group(1))])
+                yield fpath, set([getver(public_dir.group(1))])
             else:
-                yield fn, valid_versions
+                yield fpath, valid_versions
 
 
 ### COMPILE ####################################################
@@ -129,7 +158,7 @@ def py_compile(version, optimize, workers):
         version = vrepr(version)
     cmd = "/usr/bin/python%s%s -m py_compile -" \
         % (version, ' -O' if optimize else '')
-    process = Popen(cmd, bufsize=1, shell=True,
+    process = Popen(cmd, bufsize=0, shell=True,
                     stdin=PIPE, close_fds=True)
     workers[version] = process  # keep the reference for .communicate()
     stdin = process.stdin
@@ -253,7 +282,7 @@ You may use this option multiple times to build up a list of things to exclude.'
             e_patterns = get_exclude_patterns(item, options.regexpr,
                                               compile_versions)
             if not exists(item):
-                log.warn('No such file or directory: %s', item)
+                log.warning('No such file or directory: %s', item)
             else:
                 log.debug('byte compiling %s using Python %s',
                           item, compile_versions)

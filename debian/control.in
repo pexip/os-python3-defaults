@@ -2,16 +2,14 @@ Source: python3-defaults
 Section: python
 Priority: optional
 Maintainer: Matthias Klose <doko@debian.org>
-Uploaders: Piotr Ożarowski <piotr@debian.org>
-Build-Depends: debhelper (>= 9), @bd_i586@
+Uploaders: Piotr Ożarowski <piotr@debian.org>, Stefano Rivera <stefanor@debian.org>
+Build-Depends: debhelper (>= 11), @bd_i586@
   lsb-release,
   python3-minimal:any,
   python3-docutils,
-  docbook-xml,
-  docbook-xsl,
-  w3m,
-  xsltproc,
-Standards-Version: 4.3.0
+  python3-sphinx,
+  html2text,
+Standards-Version: 4.5.1
 Homepage: https://www.python.org/
 Vcs-Git: https://salsa.debian.org/cpython-team/python3-defaults.git
 Vcs-Browser: https://salsa.debian.org/cpython-team/python3-defaults
@@ -39,13 +37,19 @@ Architecture: any
 Multi-Arch: allowed
 Depends: python@VER@-venv (>= @UPSTRVER@), python3 (= ${binary:Version}),
   python3-distutils (>= @STDLIBVER@), ${misc:Depends}
-Description: pyvenv-3 binary for python3 (default python3 version)
- Python, the high-level, interactive object oriented language,
- includes an extensive class library with lots of goodies for
- network programming, system administration, sounds and graphics.
+Description: venv module for python3 (default python3 version)
+ This package contains the venv module for the Python language (default python3
+ version).
+ .
+ The venv module provides support for creating lightweight "virtual
+ environments" with their own site directories, optionally isolated from system
+ site directories. Each virtual environment has its own Python binary (which
+ matches the version of the binary that was used to create this environment)
+ and can have its own independent set of installed Python packages in its site
+ directories.
  .
  This package is a dependency package, which depends on Debian's default
- Python 3 version (currently v@VER@).
+ Python 3 version's venv module (currently v@VER@).
 
 Package: python3-minimal
 Architecture: any
@@ -68,47 +72,50 @@ Description: examples for the Python language (default version)
  the upstream Python distribution.
  .
  This package is a dependency package, which depends on Debian's default
- Python 3 version (currently v@VER@).
+ Python 3 version's examples (currently v@VER@).
 
 Package: python3-dev
 Architecture: any
 Multi-Arch: allowed
 Depends: python3 (= ${binary:Version}), libpython3-dev (= ${binary:Version}),
   python@VER@-dev (>= @UPSTRVER@), python3-distutils (>= @STDLIBVER@),
-  ${misc:Depends}, dh-python
-Replaces: python3.1 (<< 3.1.2+20100706-3)
+  ${misc:Depends}, ${sphinxdoc:Depends}
+Breaks: python3 (<< 3.9.2-1~)
+Replaces: python3.1 (<< 3.1.2+20100706-3), python3 (<< 3.9.2-1~)
+Built-Using: ${sphinxdoc:Built-Using}
 Description: header files and a static library for Python (default)
  Header files, a static library and development tools for building
  Python modules, extending the Python interpreter or embedding Python
  in applications.
  .
  This package is a dependency package, which depends on Debian's default
- Python 3 version (currently v@VER@).
+ Python 3 version's headers (currently v@VER@).
 
 Package: libpython3-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libpython@VER@-dev (>= @UPSTRVER@), ${misc:Depends}
+Breaks: libpython3.8-dev (<< 3.8.0-2), python3-dev (<< 3.8.0-1)
+Replaces: libpython3.8-dev (<< 3.8.0-2), python3-dev (<< 3.8.0-1)
 Description: header files and a static library for Python (default)
  Header files, a static library and development tools for building
  Python modules, extending the Python interpreter or embedding Python
  in applications.
  .
  This package is a dependency package, which depends on Debian's default
- Python 3 version (currently v@VER@).
+ Python 3 version's headers (currently v@VER@).
 
 Package: libpython3-stdlib
 Architecture: any
 Multi-Arch: same
 Depends: libpython@VER@-stdlib (>= @UPSTRVER@), ${misc:Depends}
 Description: interactive high-level object-oriented language (default python3 version)
- Python, the high-level, interactive object oriented language,
- includes an extensive class library with lots of goodies for
- network programming, system administration, sounds and graphics.
+ This package contains the majority of the standard library for the Python
+ language (default python3 version).
  .
  This package is a dependency package, which depends on Debian's default
- Python 3 version (currently v@VER@).
+ Python 3 version's standard library (currently v@VER@).
 
 Package: idle
 Architecture: all
@@ -121,7 +128,7 @@ Description: IDE for Python using Tkinter (default version)
  IDLE is written using Tkinter and therefore quite platform-independent.
  .
  This package is a dependency package, which depends on Debian's default
- Python 3 version (currently v@VER@).
+ Python 3 version's IDLE (currently v@VER@).
 
 Package: idle3
 Architecture: all
@@ -154,7 +161,7 @@ Description: documentation for the high-level object-oriented language Python 3
    * Distributing Python Modules
  .
  This package is a dependency package, which depends on Debian's default
- Python 3 version (currently v@VER@).
+ Python 3 version's documentation (currently v@VER@).
 
 Package: python3-dbg
 Architecture: any
@@ -170,6 +177,8 @@ Architecture: any
 Multi-Arch: same
 Section: debug
 Depends: libpython@VER@-dbg (>= @UPSTRVER@), ${misc:Depends}
+Breaks: python3-dbg (<< 3.8.0-1)
+Replaces: python3-dbg (<< 3.8.0-1)
 Description: debug build of the Python 3 Interpreter (version @VER@)
  Python 3 interpreter configured with --pydebug. Dynamically loaded modules
  are searched in /usr/lib/python@VER@/lib-dynload/debug first.
@@ -179,11 +188,10 @@ Architecture: any
 Multi-Arch: allowed
 Depends: python3 (= ${binary:Version}),
  ${misc:Depends},
- dh-python,
  python3-distutils (>= @STDLIBVER@),
- python3.7,
+ python3.9,
 Description: package depending on all supported Python 3 runtime versions
- The package currently depends on python3.7, in the future,
+ The package currently depends on python3.9, in the future,
  dependencies on jython (Python for a JVM) and ironpython (Python for Mono)
  may be added.
  .
@@ -198,9 +206,9 @@ Depends: python3 (= ${binary:Version}),
  python3-all (= ${binary:Version}),
  python3-dev (= ${binary:Version}),
  ${misc:Depends},
- python3.7-dev,
+ python3.9-dev,
 Description: package depending on all supported Python 3 development packages
- The package currently depends on python3.7-dev, in the
+ The package currently depends on python3.9-dev, in the
  future, dependencies on jython (Python for a JVM) and ironpython (Python
  for Mono) may be added.
  .
@@ -217,9 +225,9 @@ Depends: python3 (= ${binary:Version}),
  python3-all (= ${binary:Version}),
  python3-dbg (= ${binary:Version}),
  ${misc:Depends},
- python3.7-dbg,
+ python3.9-dbg,
 Description: package depending on all supported Python 3 debugging packages
- The package currently depends on python3.7-dbg, in the
+ The package currently depends on python3.9-dbg, in the
  future, dependencies on jython (Python for a JVM) and ironpython (Python
  for Mono) may be added.
  .
@@ -232,9 +240,9 @@ Multi-Arch: same
 Section: libdevel
 Depends: libpython3-dev (= ${binary:Version}),
  ${misc:Depends},
- libpython3.7-dev,
+ libpython3.9-dev,
 Description: package depending on all supported Python 3 development packages
- The package currently depends on libpython3.7-dev, in the
+ The package currently depends on libpython3.9-dev, in the
  future, dependencies on jython (Python for a JVM) and ironpython (Python
  for Mono) may be added.
  .
@@ -248,9 +256,9 @@ Multi-Arch: same
 Section: debug
 Depends: libpython3-dbg (= ${binary:Version}),
  ${misc:Depends},
- libpython3.7-dbg,
+ libpython3.9-dbg,
 Description: package depending on all supported Python 3 debugging packages
- The package currently depends on libpython3.7-dbg, in the
+ The package currently depends on libpython3.9-dbg, in the
  future, dependencies on jython (Python for a JVM) and ironpython (Python
  for Mono) may be added.
  .
@@ -264,9 +272,43 @@ Depends: python3-lib2to3 (>= @STDLIBVER@), python3 (>= ${binary:Version}), ${mis
 Breaks: python (<< 2.7.14-4)
 Replaces: python (<< 2.7.14-4)
 Description: 2to3 binary using python3
+ 2to3 is a Python program that reads Python 2.x source code and applies a
+ series of fixers to transform it into valid Python 3.x code. The standard
+ library contains a rich set of fixers that will handle almost all code. 2to3
+ supporting library lib2to3 is, however, a flexible and generic library, so it
+ is possible to write your own fixers for 2to3. lib2to3 could also be adapted
+ to custom applications in which Python code needs to be edited automatically.
+ .
+ This package is a dependency package, which depends on Debian's default
+ Python 3 2to3 version (currently v@VER@).
+
+Package: python3-full
+Architecture: any
+Multi-Arch: allowed
+Depends: python3 (= ${binary:Version}),
+  python3.9-full (>= @UPSTRVER@),
+  python3-venv (= ${binary:Version}),
+  2to3,
+  idle,
+  python3-distutils,
+  python3-gdbm,
+  python3-lib2to3,
+  python3-tk,
+  ${shlibs:Depends}, ${misc:Depends}
+Recommends: python3-doc, python3-examples,
+Suggests: python3-dev
+Description: Default Python Interpreter with complete class library
  Python, the high-level, interactive object oriented language,
  includes an extensive class library with lots of goodies for
  network programming, system administration, sounds and graphics.
  .
- This package is a dependency package, which depends on Debian's default
- Python 3 2to3 version (currently v@VER@).
+ This package is a dependency package, which depends on the full
+ standard library of Python for Python developers. Including modules
+ used only at build-time, such as venv and distutils, and modules with
+ complex dependencies, such as tk and IDLE. All batteries included.
+ .
+ This package depends on Debian's default python 3 version's full
+ standard library (currently v3.9).
+ .
+ According to the Debian Python policy, this package must not be used in
+ build dependencies, dependencies and recommendations.
