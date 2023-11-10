@@ -12,23 +12,22 @@ changelog_values := $(shell dpkg-parsechangelog \
 			| awk '/^(Version|Source):/ {print $$2}')
 PKGSOURCE  := $(word 1, $(changelog_values))
 PKGVERSION := $(word 2, $(changelog_values))
-UPSTRVER   := $(shell echo $(PKGVERSION) | sed -rne 's,(.*)-.*,\1,p')
-IPKGVER    := $(shell echo $(PKGVERSION) | sed -rne 's,(.*)\+.*,\1,p')
-VER        := $(shell echo $(PKGVERSION) | sed -rne 's,(.{3}).*,\1,p')
+UPSTRVER   := $(shell echo $(PKGVERSION) | sed 's,(.*)-.*,\1,')
+VER        := $(shell echo $(PKGVERSION) | awk 'BEGIN{FS="." }{print $$1 "." $$2}')
 NVER       := $(shell echo $(VER) | awk 'BEGIN{FS="." }{print $$1 "." $$2 + 1}') 
 
 
 distribution := $(shell dpkg-vendor --query Vendor)
-distrelease  := $(shell lsb_release -cs)
+distrelease  := $(shell . /etc/os-release; echo $$VERSION_CODENAME)
 
-# requiered python3.x version
-UPSTRVER   := 3.9.2-0~
+# required python3.x version
+UPSTRVER   := 3.11.2-1~
 
 # required versions of python3-lib2to3 and python3-distutils
-STDLIBVER   := 3.9.2-0~
+STDLIBVER   := 3.11.2-1~
 
 ifeq (,$(filter $(distrelease),lenny etch squeeze wheezy lucid maverick natty oneiric precise quantal raring saucy trusty))
-  bd_i586 = dpkg-dev (>= 1.17.11), python3.9:any (>= 3.9.2-0~),
+  bd_i586 = dpkg-dev (>= 1.17.11), python3.11:any (>= 3.11.2-1~),
 else
   bd_i586 = dpkg-dev (>= 1.16.1~),
 endif
@@ -42,9 +41,14 @@ scriptdir	=  usr/lib/python$(VER)
 
 rst2html	= rst2html
 
+ifeq (,$(findstring nodoc,$(DEB_BUILD_OPTIONS)))
 with_doc	= yes
+else
+with_doc	= no
+endif
+
 ifneq ($(with_doc),yes)
-  NOPKGS	= -Npython-doc
+  NOPKGS	= -Npython3-doc
 endif
 
 build-arch: build
@@ -67,13 +71,16 @@ stamp-doc-policy:
 	$(MAKE) -C policy html singlehtml
 	touch stamp-doc-policy
 
+ifeq ($(with_doc),yes)
 stamp-doc: stamp-doc-policy
+else
+stamp-doc:
+endif
 	touch stamp-doc
 
 control-file:
 	sed -e "s/@UPSTRVER@/$(UPSTRVER)/g" \
 	    -e "s/@STDLIBVER@/$(STDLIBVER)/g" \
-	    -e "s/@IPKGVER@/$(IPKGVER)/g" \
 	    -e "s/@NVER@/$(NVER)/g" \
 	    -e "s/@VER@/$(VER)/g" \
 	    -e "s/@bd_i586@/$(bd_i586)/g" \
@@ -170,7 +177,10 @@ stamp-dh_python:
 	dh_installdirs
 	#make check_versions
 	DESTDIR=debian/python3 PREFIX=/usr make install-dev
-	DESTDIR=debian/python3-minimal PREFIX=/usr make install-runtime manpages
+	DESTDIR=debian/python3-minimal PREFIX=/usr make install-runtime
+ifeq ($(with_doc),yes)
+	DESTDIR=debian/python3-minimal PREFIX=/usr make manpages
+endif
 	# disabled by default, run manually if you want to update it
 	# (requires apt-file and network connection)
 	#make dist_fallback
@@ -273,6 +283,7 @@ binary-arch: build install stamp-doc
 	ln -sf pdb$(VER).1.gz \
 		debian/python3/usr/share/man/man1/pdb3.1.gz
 
+ifeq ($(with_doc),yes)
 	mkdir -p debian/python3/usr/share/doc/python3
 	cp -p policy/_build/python-policy.txt \
 		debian/python3/usr/share/doc/python3/
@@ -290,6 +301,7 @@ binary-arch: build install stamp-doc
 		debian/python3-dev/usr/share/doc/python3/python-policy.html
 	ln -sf python-policy.html \
 		debian/python3-dev/usr/share/doc/python3/index.html
+endif
 
 	mkdir -p debian/python3/usr/share/pixmaps
 	ln -sf python$(VER).xpm debian/python3/usr/share/pixmaps/python3.xpm
@@ -390,11 +402,15 @@ ifneq ($(DEB_HOST_MULTIARCH),$(DEB_HOST_GNU_TYPE))
 		debian/libpython3-dbg/usr/share/man/man1/$(DEB_HOST_GNU_TYPE)-python3-dbg-config.1.gz
 endif
 
+	: # python3-nopie
+	mkdir -p debian/python3-nopie/usr/bin
+	ln -sf python$(VER)-pie debian/python3-nopie/usr/bin/python3-pie
+
 	dh_lintian -a
 	dh_installdocs -a $(NOPKGS) --all debian/README.Debian
 	dh_installchangelogs -a $(NOPKGS)
 
-	for p in all all-dev all-dbg dbg dev venv full; do \
+	for p in all all-dev all-dbg dbg dev nopie venv full; do \
 	  case $$p in idle*) : ;; *) p=python3-$$p; esac; \
 	  rm -rf debian/$$p/usr/share/doc/$$p; \
 	  ln -sf python3 debian/$$p/usr/share/doc/$$p; \

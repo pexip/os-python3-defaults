@@ -147,6 +147,16 @@ See :pep:`394` for details.
 The version of the ``python`` package must be greater than or equal to
 :samp:`2.{Y}` and lower than :samp:`2.{Y+1}`.
 
+Virtual packages for Python-version specific dependencies
+---------------------------------------------------------
+
+The `python3` package provides `python3-supported-min (= {X}.{Y})` and
+`python3-supported-max (= {X}.{Y})` virtual packages.
+This allows packages to declare dependencies of the form
+:samp:`python3-foo | python3-supported-min (>= 3.7)` or
+:samp:`python3-foo | python3-supported-max (<= 3.7)`, which would
+install `python3-foo` if any supported `python3` version requires it.
+
 Minimal packages
 ----------------
 
