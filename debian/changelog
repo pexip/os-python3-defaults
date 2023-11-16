@@ -1,3 +1,9 @@
+python3-defaults (3.9.2.3pexip5) pexip-bookworm; urgency=medium
+
+  * Initial bookworm build
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Thu, 16 Nov 2023 10:27:29 +0000
+
 python3-defaults (3.9.2.3pexip4) pexip-bullseye; urgency=medium
 
   * Bullseye rebuild for ARM64 inclusion
