@@ -1,3 +1,9 @@
+python3-defaults (3.11.2-1pexip1) pexip-bookworm; urgency=medium
+
+  * Initial bookworm build
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Thu, 16 Nov 2023 10:27:29 +0000
+
 python3-defaults (3.11.2-1) unstable; urgency=high
 
   * Bump version to 3.11.2. Closes: #1031336.
@@ -126,12 +132,6 @@ python3-defaults (3.9.4-1) experimental; urgency=medium
   * Bump version to 3.9.4.
 
  -- Matthias Klose <doko@debian.org>  Tue, 06 Apr 2021 19:28:56 +0200
-
-python3-defaults (3.9.2.3pexip5) pexip-bookworm; urgency=medium
-
-  * Initial bookworm build
-
- -- Mark Hymers <mark.hymers@pexip.com>  Thu, 16 Nov 2023 10:27:29 +0000
 
 python3-defaults (3.9.2-3) unstable; urgency=medium
 
