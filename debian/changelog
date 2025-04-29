@@ -1,3 +1,9 @@
+python3-defaults (3.11.2+pexip25u1) pexip-trixie; urgency=medium
+
+  * Initial trixie build
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Tue, 29 Apr 2025 22:57:06 +0100
+
 python3-defaults (3.11.2+pexip24u4) pexip-bookworm; urgency=medium
 
   * New versioning scheme
