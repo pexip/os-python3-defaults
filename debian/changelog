@@ -1,3 +1,178 @@
+python3-defaults (3.13.3-1) unstable; urgency=medium
+
+  * Bump version to 3.13.3.
+  * Update py3versions man page (Bjarni Ingi Gislason). Closes: #1101400.
+  * README.Debian: Update for 3.13. Closes: #1061144.
+
+ -- Matthias Klose <doko@debian.org>  Wed, 09 Apr 2025 10:07:25 +0200
+
+python3-defaults (3.13.2-2) unstable; urgency=medium
+
+  * Stop building the 2to3 and python3-lib2to3 packages.
+  * python3-full: Don't depend anymore on the removed packages.
+  * Bump standards version.
+
+ -- Matthias Klose <doko@debian.org>  Tue, 04 Mar 2025 16:29:02 +0100
+
+python3-defaults (3.13.2-1) unstable; urgency=medium
+
+  * Bump version to 3.13.2.
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 24 Feb 2025 18:47:22 -0400
+
+python3-defaults (3.13.1-3) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 24 Feb 2025 18:41:09 -0400
+
+python3-defaults (3.13.1-3~exp1) experimental; urgency=medium
+
+  * Upload to experimental.
+  * Remove Python 3.12 as a supported version.
+
+ -- Stefano Rivera <stefanor@debian.org>  Sun, 26 Jan 2025 12:53:58 -0400
+
+python3-defaults (3.13.1-2) unstable; urgency=medium
+
+  * py3clean: Migrate away from deprecated glob1. (Closes: #1092357)
+
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 08 Jan 2025 10:16:01 -0400
+
+python3-defaults (3.13.1-1) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Matthias Klose <doko@debian.org>  Tue, 07 Jan 2025 10:39:13 +0100
+
+python3-defaults (3.13.1-1~exp2) experimental; urgency=medium
+
+  * Correct Depends of libpython3-dbg: libpython3.13-dbg does not need a t64
+    suffix.
+
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 25 Dec 2024 17:34:28 -0400
+
+python3-defaults (3.13.1-1~exp1) experimental; urgency=medium
+
+  [ Matthias Klose ]
+  * Default to Python 3.13.
+
+  [ Stefano Rivera ]
+  * Remove redundant check from check_versions.
+
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 25 Dec 2024 12:20:34 -0400
+
+python3-defaults (3.12.8-1) unstable; urgency=medium
+
+  * Bump version to 3.12.8
+  * Update python3-supported-max (missed in 3.12.7-1).
+  * Add a check that python3-supported-(min|max) is correct.
+  * Re-enable check_versions at build time.
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 23 Dec 2024 15:15:27 -0400
+
+python3-defaults (3.12.7-1) unstable; urgency=medium
+
+  [ Matthias Klose ]
+  * Bump version to 3.12.7
+
+  [ Stefano Rivera ]
+  * Add 3.13 as a supported Python3 version.
+
+ -- Matthias Klose <doko@debian.org>  Wed, 13 Nov 2024 06:53:11 +0100
+
+python3-defaults (3.12.6-1) unstable; urgency=medium
+
+  * Bump version to 3.12.6
+  * 2to3: Remove obsolete breaks/replaces.
+  * Make python3 maintainer scripts more robust for runtime updates.
+    LP: #2078356.
+
+ -- Matthias Klose <doko@debian.org>  Mon, 16 Sep 2024 17:21:13 +0200
+
+python3-defaults (3.12.5-1) unstable; urgency=medium
+
+  * Bump version to 3.12.5
+  * debpython/files.py: Set LC_ALL="C.UTF-8" before calling dpkg -L to avoid
+    localization issues (LP: #2075337)
+  * Bump standards version.
+
+ -- Matthias Klose <doko@debian.org>  Thu, 08 Aug 2024 07:30:33 +0200
+
+python3-defaults (3.12.4-1) unstable; urgency=medium
+
+  * Bump version to 3.12.4
+  * python3: Conflict with python3-distutils.
+
+ -- Matthias Klose <doko@debian.org>  Sat, 20 Jul 2024 11:46:46 +0200
+
+python3-defaults (3.12.3-1) unstable; urgency=medium
+
+  * Bump version to 3.12.3
+  * Drop dependencies on python3-distutils.
+  * Remove Python 3.11 as a supported version.
+
+ -- Matthias Klose <doko@debian.org>  Tue, 09 Jul 2024 13:01:35 +0200
+
+python3-defaults (3.12.2-1) unstable; urgency=medium
+
+  [ Stefano Rivera ]
+  * Migrate to html2text 2.x, which dropped the -pretty flag.
+    Closes: #1064737.
+  * Fix typo in py3clean manpage. Thanks JT Hundley. Closes: #1070728.
+
+  [ Matthias Klose ]
+  * Bump version.
+  * Depend on libpython3.XYt64-dbg, tighten python3.12 build dependency.
+
+ -- Matthias Klose <doko@debian.org>  Mon, 24 Jun 2024 10:23:35 +0200
+
+python3-defaults (3.12.1-1) experimental; urgency=medium
+
+  * Default to Python 3.12.
+  * Bump hardcoded Provides: python3-supported-max to 3.12.
+  * Stop building the transitional idle3 package. Closes: #1032789.
+
+ -- Matthias Klose <doko@debian.org>  Sat, 20 Jan 2024 09:02:48 +0100
+
+python3-defaults (3.11.6-1) unstable; urgency=medium
+
+  * Add 3.12 as a supported Python3 version.
+  * Bump version to 3.11.6.
+
+ -- Matthias Klose <doko@debian.org>  Sun, 03 Dec 2023 10:21:41 +0100
+
+python3-defaults (3.11.4-5) unstable; urgency=medium
+
+  * Source-only upload.
+
+ -- Piotr Ożarowski <piotr@debian.org>  Wed, 05 Jul 2023 11:27:27 +0200
+
+python3-defaults (3.11.4-4) unstable; urgency=high
+
+  * Fix importlib.util import (-3 regression, closes: 1040316)
+
+ -- Piotr Ożarowski <piotr@debian.org>  Tue, 04 Jul 2023 19:49:27 +0200
+
+python3-defaults (3.11.4-3) unstable; urgency=medium
+
+  * debpython/interpreter.py: Stop using the imp module, removed in 3.12.
+    Closes: #1040261.
+
+ -- Matthias Klose <doko@debian.org>  Tue, 04 Jul 2023 12:08:14 +0200
+
+python3-defaults (3.11.4-2) experimental; urgency=medium
+
+  * Add new binary package: python3-all-venv. Closes: #1039988.
+
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 01 Jul 2023 09:38:35 -0400
+
+python3-defaults (3.11.4-1) unstable; urgency=medium
+
+  * Bump version to 3.11.4.
+
+ -- Matthias Klose <doko@debian.org>  Sun, 25 Jun 2023 14:41:31 +0200
+
 python3-defaults (3.11.2+pexip25u1) pexip-trixie; urgency=medium
 
   * Initial trixie build
