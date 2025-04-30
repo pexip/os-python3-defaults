@@ -32,7 +32,7 @@ def from_directory(dname, extensions=('.py',)):
     extensions = tuple(extensions)  # .endswith doesn't like list
     if isinstance(dname, (list, tuple)):
         for item in dname:
-            for fn in from_directory(item):
+            for fn in from_directory(item, extensions):
                 yield fn
     elif isfile(dname) and dname.endswith(extensions):
         yield dname

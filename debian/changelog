@@ -1,3 +1,11 @@
+python3-defaults (3.13.3-1) unstable; urgency=medium
+
+  * Bump version to 3.13.3.
+  * Update py3versions man page (Bjarni Ingi Gislason). Closes: #1101400.
+  * README.Debian: Update for 3.13. Closes: #1061144.
+
+ -- Matthias Klose <doko@debian.org>  Wed, 09 Apr 2025 10:07:25 +0200
+
 python3-defaults (3.13.2-2) unstable; urgency=medium
 
   * Stop building the 2to3 and python3-lib2to3 packages.
@@ -8,7 +16,7 @@ python3-defaults (3.13.2-2) unstable; urgency=medium
 
 python3-defaults (3.13.2-1) unstable; urgency=medium
 
-  * Bump version to 3.13.2
+  * Bump version to 3.13.2.
 
  -- Stefano Rivera <stefanor@debian.org>  Mon, 24 Feb 2025 18:47:22 -0400
 
