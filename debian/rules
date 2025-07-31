@@ -21,13 +21,13 @@ distribution := $(shell dpkg-vendor --query Vendor)
 distrelease  := $(shell . /etc/os-release; echo $$VERSION_CODENAME)
 
 # required python3.x version
-UPSTRVER   := 3.13.3-1~
+UPSTRVER   := 3.13.5-1~
 
-# required versions of python3-lib2to3 and python3-distutils
-STDLIBVER   := 3.13.3-1~
+# required versions of python3-tk
+STDLIBVER   := 3.13.5-1~
 
 ifeq (,$(filter $(distrelease),lenny etch squeeze wheezy lucid maverick natty oneiric precise quantal raring saucy trusty))
-  bd_i586 = dpkg-dev (>= 1.17.11), python3.13:any (>= 3.13.3-1~),
+  bd_i586 = dpkg-dev (>= 1.17.11), python3.13:any (>= 3.13.5-1~),
 else
   bd_i586 = dpkg-dev (>= 1.16.1~),
 endif
@@ -214,13 +214,6 @@ endif
 
 	mkdir -p debian/idle/usr/share/applications
 	cp -p debian/idle.desktop debian/idle/usr/share/applications/
-
-	: # provide the 2to3-3 a and 2to3-3.1 defaults
-	mkdir -p debian/2to3/usr/bin
-	install -m 755 debian/2to3.py debian/2to3/usr/bin/2to3
-
-	mkdir -p debian/2to3/usr/share/man/man1
-	install -m 644 debian/2to3.1 debian/2to3/usr/share/man/man1/2to3.1
 
 #	dh_installdebconf -i $(NOPKGS)
 	dh_lintian -i
