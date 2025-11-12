@@ -1,3 +1,16 @@
+python3-defaults (3.13.5-1) unstable; urgency=medium
+
+  * Bump version to 3.13.5.
+  * Fix typo in unsupported_versions.
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 30 Jun 2025 09:17:02 +0200
+
+python3-defaults (3.13.4-1) unstable; urgency=medium
+
+  * Bump version to 3.13.4.
+
+ -- Matthias Klose <doko@debian.org>  Thu, 05 Jun 2025 07:58:03 +0200
+
 python3-defaults (3.13.3+pexip25u1) pexip-trixie; urgency=medium
 
   * New upstream release
