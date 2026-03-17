@@ -1,3 +1,16 @@
+python3-defaults (3.13.5-1+pexip25u1) pexip-trixie; urgency=medium
+
+  * New upstream release
+
+ -- Steve McIntyre <steve.mcintyre@pexip.com>  Tue, 17 Mar 2026 11:27:21 +0000
+
+python3-defaults (3.13.5-1) unstable; urgency=medium
+
+  * Bump version to 3.13.5.
+  * Fix typo in unsupported_versions.
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 30 Jun 2025 09:17:02 +0200
+
 python3-defaults (3.13.5+pexip25u2) pexip-trixie; urgency=medium
 
   * Trixie build for product distribution
@@ -9,13 +22,6 @@ python3-defaults (3.13.5+pexip25u1) pexip-trixie; urgency=medium
   * New upstream release
 
  -- Mark Hymers <mark.hymers@pexip.com>  Wed, 12 Nov 2025 10:04:26 +0000
-
-python3-defaults (3.13.5-1) unstable; urgency=medium
-
-  * Bump version to 3.13.5.
-  * Fix typo in unsupported_versions.
-
- -- Stefano Rivera <stefanor@debian.org>  Mon, 30 Jun 2025 09:17:02 +0200
 
 python3-defaults (3.13.4-1) unstable; urgency=medium
 
@@ -211,6 +217,7 @@ python3-defaults (3.11.4-1) unstable; urgency=medium
 
  -- Matthias Klose <doko@debian.org>  Sun, 25 Jun 2023 14:41:31 +0200
 
+<<<<<<< HEAD
 python3-defaults (3.11.2+pexip25u1) pexip-trixie; urgency=medium
 
   * Initial trixie build
@@ -242,6 +249,8 @@ python3-defaults (3.11.2pexip1) pexip-bookworm; urgency=medium
 
  -- Mark Hymers <mark.hymers@pexip.com>  Thu, 16 Nov 2023 10:27:29 +0000
 
+=======
+>>>>>>> debian-trixie
 python3-defaults (3.11.2-1) unstable; urgency=high
 
   * Bump version to 3.11.2. Closes: #1031336.
